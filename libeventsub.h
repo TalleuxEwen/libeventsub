@@ -4,6 +4,10 @@
 
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct data_ {
     char *event_name;
 } Data;
@@ -33,3 +37,7 @@ int subscribe_to_event(const char *event_name, void (*function)(void *));
 int unsubscribe_from_event(const char *event_name, void (*function)(void *));
 void callEvent(const char *event_name, void *args);
 int free_event_subscriptions(void);
+
+#ifdef __cplusplus
+}
+#endif
