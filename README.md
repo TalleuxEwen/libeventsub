@@ -54,25 +54,25 @@ Each sub-library can keep its own `FetchContent_Declare(libeventsub ...)` for st
 **Example — two independent libraries sharing one bus:**
 
 ```c
-// lib_audio.c
+// lib_network.c — owns the bus lifecycle and registers events
+void lib_network_init(void) {
+    if (init_event_subscriptions() != 0)
+        return;
+    register_event("on_connect");
+}
+void lib_network_on_connected(void) {
+    callEvent("on_connect", &connection_info, false);  // triggers lib_audio's callback
+}
+
+// lib_audio.c — subscribes only, relies on bus already being initialized
 void lib_audio_init(void) {
     subscribe_to_event("on_connect", audio_handle_connect);
 }
 
-// lib_network.c
-void lib_network_init(void) {
-    register_event("on_connect");
-}
-void lib_network_on_connected(void) {
-    callEvent("on_connect", &connection_info);  // triggers lib_audio's callback
-}
-
 // main.c
 int main(void) {
-    init_event_subscriptions();  // called once
-
-    lib_audio_init();
-    lib_network_init();
+    lib_network_init();  // initializes bus + registers events
+    lib_audio_init();    // subscribes
 
     lib_network_on_connected();  // lib_audio receives the event
     free_event_subscriptions();
@@ -88,7 +88,7 @@ int main(void) {
 | `unregister_event(name)` | Unregister an event |
 | `subscribe_to_event(name, callback)` | Subscribe a callback to an event |
 | `unsubscribe_from_event(name, callback)` | Unsubscribe a specific callback |
-| `callEvent(name, data)` | Dispatch an event to all subscribers |
+| `callEvent(name, data, getValue)` | Dispatch an event; if `getValue` is `true`, returns the value of the first matching callback |
 | `free_event_subscriptions()` | Free all resources |
 
 All functions return `0` on success, `1` on error (except `callEvent`).
@@ -109,7 +109,7 @@ int main(void) {
     register_event("message");
     subscribe_to_event("message", on_message);
 
-    callEvent("message", "hello world");
+    callEvent("message", "hello world", false);
 
     free_event_subscriptions();
     return 0;

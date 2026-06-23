@@ -11,12 +11,12 @@
 
 EventSubscription *event_subscriptions;
 
-static SubscriptionList *createNewSubscription(void (*function)(void *), EventLinkedList *event) {
+static SubscriptionList *createNewSubscription(void *(*function)(void *), EventLinkedList *event) {
     SubscriptionList *new_subscription = (SubscriptionList *) malloc(sizeof(SubscriptionList));
 
-    if (new_subscription == NULL) {
+    if (new_subscription == 0) {
         perror("Failed to allocate memory for new subscription");
-        return NULL;
+        return 0;
     }
 
     new_subscription->function = function;
@@ -28,29 +28,29 @@ static SubscriptionList *createNewSubscription(void (*function)(void *), EventLi
 static EventLinkedList *createNewEvent(const char *event_name) {
     EventLinkedList *new_event = (EventLinkedList *) malloc(sizeof(EventLinkedList));
 
-    if (new_event == NULL) {
+    if (new_event == 0) {
         perror("Failed to allocate memory for new event");
         fprintf(stderr, "Error: %s\n", strerror(errno));
-        return NULL;
+        return 0;
     }
 
     new_event->data = (Data *) malloc(sizeof(Data));
 
-    if (new_event->data == NULL) {
+    if (new_event->data == 0) {
         perror("Failed to allocate memory for event data");
         fprintf(stderr, "Error: %s\n", strerror(errno));
         free(new_event);
-        return NULL;
+        return 0;
     }
 
     new_event->data->event_name = strdup(event_name);
 
-    if (new_event->data->event_name == NULL) {
+    if (new_event->data->event_name == 0) {
         perror("Failed to allocate memory for event name");
         fprintf(stderr, "Error: %s\n", strerror(errno));
         free(new_event->data);
         free(new_event);
-        return NULL;
+        return 0;
     }
 
     return new_event;
@@ -69,26 +69,26 @@ static void free_event_registered(EventLinkedList *event) {
 int init_event_subscriptions(void) {
     event_subscriptions = (EventSubscription *) malloc(sizeof(EventSubscription));
 
-    if (event_subscriptions == NULL) {
+    if (event_subscriptions == 0) {
         perror("Failed to allocate memory for event subscriptions");
         fprintf(stderr, "Error: %s\n", strerror(errno));
         return 1;
     }
 
-    event_subscriptions->event_list = NULL;
-    event_subscriptions->subscription_list = NULL;
+    event_subscriptions->event_list = 0;
+    event_subscriptions->subscription_list = 0;
     fprintf(stdout, "Event subscriptions initialized\n");
     return 0;
 }
 
-int subscribe_to_event(const char *event_name, void (*function)(void *)) {
-    if (event_subscriptions == NULL) {
+int subscribe_to_event(const char *event_name, void *(*function)(void *)) {
+    if (event_subscriptions == 0) {
         printf("Event subscriptions not initialized\n");
         return 1;
     }
 
-    EventLinkedList *event_registered = NULL;
-    if (event_subscriptions->event_list == NULL) {
+    EventLinkedList *event_registered = 0;
+    if (event_subscriptions->event_list == 0) {
         printf("No event registered\n");
         return 1;
     } else {
@@ -102,18 +102,18 @@ int subscribe_to_event(const char *event_name, void (*function)(void *)) {
         } while (current = current->next, current != event_subscriptions->event_list);
     }
 
-    if (event_registered == NULL) {
+    if (event_registered == 0) {
         printf("Event '%s' not registered\n", event_name);
         return 1;
     }
 
     SubscriptionList *new_subscription = createNewSubscription(function, event_registered);
 
-    if (new_subscription == NULL) {
+    if (new_subscription == 0) {
         return 1;
     }
 
-    if (event_subscriptions->subscription_list == NULL) {
+    if (event_subscriptions->subscription_list == 0) {
         new_subscription->next = new_subscription;
         new_subscription->previous = new_subscription;
         event_subscriptions->subscription_list = new_subscription;
@@ -127,13 +127,13 @@ int subscribe_to_event(const char *event_name, void (*function)(void *)) {
     return 0;
 }
 
-int unsubscribe_from_event(const char *event_name, void (*function)(void *)) {
-    if (event_subscriptions == NULL) {
+int unsubscribe_from_event(const char *event_name, void *(*function)(void *)) {
+    if (event_subscriptions == 0) {
         printf("Event subscriptions not initialized\n");
         return 1;
     }
 
-    SubscriptionList *subscription_to_remove = NULL;
+    SubscriptionList *subscription_to_remove = 0;
     SubscriptionList *current = event_subscriptions->subscription_list;
 
     do {
@@ -141,7 +141,7 @@ int unsubscribe_from_event(const char *event_name, void (*function)(void *)) {
             if (current->function == function) {
                 if (event_subscriptions->subscription_list == current) {
                     if (current->next == current) {
-                        event_subscriptions->subscription_list = NULL;
+                        event_subscriptions->subscription_list = 0;
                     } else {
                         event_subscriptions->subscription_list = current->next;
                     }
@@ -152,7 +152,7 @@ int unsubscribe_from_event(const char *event_name, void (*function)(void *)) {
         }
     } while (current = current->next, current != event_subscriptions->subscription_list);
 
-    if (subscription_to_remove == NULL) {
+    if (subscription_to_remove == 0) {
         printf("No subscription found for event '%s'\n", event_name);
         return 1;
     }
@@ -166,14 +166,14 @@ int unsubscribe_from_event(const char *event_name, void (*function)(void *)) {
 }
 
 int register_event(const char *event_name) {
-    if (event_subscriptions == NULL) {
+    if (event_subscriptions == 0) {
         printf("Event subscriptions not initialized\n");
         return 1;
     }
 
-    if (event_subscriptions->event_list == NULL) {
+    if (event_subscriptions->event_list == 0) {
         EventLinkedList *new_event = createNewEvent(event_name);
-        if (new_event == NULL) {
+        if (new_event == 0) {
             return 1;
         }
 
@@ -193,7 +193,7 @@ int register_event(const char *event_name) {
 
         EventLinkedList *new_event = createNewEvent(event_name);
 
-        if (new_event == NULL) {
+        if (new_event == 0) {
             return 1;
         }
 
@@ -208,12 +208,12 @@ int register_event(const char *event_name) {
 }
 
 int unregister_event(const char *event_name) {
-    if (event_subscriptions == NULL) {
+    if (event_subscriptions == 0) {
         printf("Event subscriptions not initialized\n");
         return 1;
     }
 
-    if (event_subscriptions->event_list == NULL) {
+    if (event_subscriptions->event_list == 0) {
         printf("No event registered\n");
         return 1;
     }
@@ -226,7 +226,7 @@ int unregister_event(const char *event_name) {
 
             if (event_subscriptions->event_list == current) {
                 if (current->next == current) {
-                    event_subscriptions->event_list = NULL;
+                    event_subscriptions->event_list = 0;
                 } else {
                     event_subscriptions->event_list = current->next;
                 }
@@ -242,14 +242,14 @@ int unregister_event(const char *event_name) {
 }
 
 int free_event_subscriptions(void) {
-    if (event_subscriptions == NULL) {
+    if (event_subscriptions == 0) {
         printf("Event subscriptions not initialized\n");
         return 1;
     }
 
     EventSubscription *event_subscriptions_to_free = event_subscriptions;
 
-    if (event_subscriptions_to_free->subscription_list != NULL) {
+    if (event_subscriptions_to_free->subscription_list != 0) {
         SubscriptionList *current_subscription = event_subscriptions_to_free->subscription_list;
 
         do {
@@ -258,12 +258,12 @@ int free_event_subscriptions(void) {
             current_subscription = next_subscription;
         } while (current_subscription != event_subscriptions_to_free->subscription_list);
 
-        event_subscriptions_to_free->subscription_list = NULL;
+        event_subscriptions_to_free->subscription_list = 0;
     } else {
         printf("No subscriptions to free\n");
     }
 
-    if (event_subscriptions_to_free->event_list != NULL) {
+    if (event_subscriptions_to_free->event_list != 0) {
         EventLinkedList *current_event = event_subscriptions_to_free->event_list;
 
         do {
@@ -276,26 +276,30 @@ int free_event_subscriptions(void) {
     }
 
     free(event_subscriptions_to_free);
-    event_subscriptions = NULL;
+    event_subscriptions = 0;
     return 0;
 }
 
-void callEvent(const char *event_name, void *args) {
-    if (event_subscriptions == NULL) {
+void *callEvent(const char *event_name, void *args, bool getValue) {
+    if (event_subscriptions == 0) {
         printf("Event subscriptions not initialized\n");
-        return;
+        return 0;
     }
 
-    if (event_subscriptions->subscription_list == NULL) {
+    if (event_subscriptions->subscription_list == 0) {
         printf("No subscriptions available\n");
-        return;
+        return 0;
     }
 
     SubscriptionList *current = event_subscriptions->subscription_list;
 
     do {
         if (strcmp(event_name, current->event->data->event_name) == 0) {
-            current->function(args);
+            if (getValue) {
+                return current->function(args);
+            } else {
+                current->function(args);
+            }
         }
     } while (current = current->next, current != event_subscriptions->subscription_list);
 }
