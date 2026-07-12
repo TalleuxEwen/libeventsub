@@ -133,6 +133,11 @@ int unsubscribe_from_event(const char *event_name, void *(*function)(void *)) {
         return 1;
     }
 
+    if (event_subscriptions->subscription_list == 0) {
+        printf("No subscriptions available\n");
+        return 1;
+    }
+
     SubscriptionList *subscription_to_remove = 0;
     SubscriptionList *current = event_subscriptions->subscription_list;
 
@@ -302,4 +307,6 @@ void *callEvent(const char *event_name, void *args, bool getValue) {
             }
         }
     } while (current = current->next, current != event_subscriptions->subscription_list);
+
+    return 0;
 }
